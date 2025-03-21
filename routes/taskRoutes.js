@@ -43,7 +43,32 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-////////////////////////////////////// เลือก ///////////////////////////////////////////
+////////////////////////////////////// ดูงานทั้งหมด //////////////////////////////////////
+router.get("/", async (req, res) => {
+  try {
+    const tasks = await Task.find();
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+////////////////////////////////////// รายงานสรุป //////////////////////////////////////
+router.get("/summary", async (req, res) => {
+  try {
+    const completedTasksCount = await Task.countDocuments({ status: "Completed" });
+    const pendingTasksCount = await Task.countDocuments({ status: { $in: ["Pending", "In Progress"] } });
+
+    res.json({
+      completedTasksCount,
+      pendingTasksCount,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+////////////////////////////////////// เลือกจากชื่อ ///////////////////////////////////////////
 router.get("/:title", async (req, res) => {
     try {
         const task = await Task.find({
@@ -58,16 +83,6 @@ router.get("/:title", async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
-});
-
-////////////////////////////////////// ดูงานทั้งหมด //////////////////////////////////////
-router.get("/", async (req, res) => {
-  try {
-    const tasks = await Task.find();
-    res.json(tasks);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////
