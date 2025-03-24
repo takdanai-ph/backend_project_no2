@@ -73,4 +73,20 @@ router.delete("/users/:id", protect, authorize(["Admin"]), async (req, res) => {
   }
 });
 
+router.get("/users/:fname", protect, authorize(["Admin"]), async (req, res) => {
+    try {
+        const fname = await User.find({
+            fname: { $regex: req.params.fname, $options: "i" }
+        });
+
+        if (fname.length === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.json(fname);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;
