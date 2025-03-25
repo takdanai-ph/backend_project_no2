@@ -5,18 +5,18 @@ const User = require('../models/User');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const router = express.Router();
 
-// +user
-router.post('/register', async (req, res) => {
-  const { username, password, fname, lname, email, role } = req.body;
-  try {
-    const user = await User.create({ username, password, fname, lname, email, role });
-    res.status(201).json({ message: 'User registered successfully' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+// add user
+// router.post('/register', async (req, res) => {
+//   const { username, password, fname, lname, email, role } = req.body;
+//   try {
+//     const user = await User.create({ username, password, fname, lname, email, role });
+//     res.status(201).json({ message: 'User registered successfully' });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
-// login
+////////////////////////////////////// login //////////////////////////////////////
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   try {
@@ -34,7 +34,8 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-// 
+
+////////////////////////////////////// ดู all user //////////////////////////////////////
 router.get('/users', protect, authorize(['Admin']), async (req, res) => {
     try {
       const users = await User.find().select('-password'); // ไม่ส่งคืนรหัสผ่าน
@@ -44,6 +45,7 @@ router.get('/users', protect, authorize(['Admin']), async (req, res) => {
     }
   });  
 
+////////////////////////////////////// create user //////////////////////////////////////
 router.post("/users", protect, authorize(["Admin"]), async (req, res) => {
   const { username, password, role, fname, lname, email } = req.body;
   try {
@@ -54,6 +56,7 @@ router.post("/users", protect, authorize(["Admin"]), async (req, res) => {
   }
 });
 
+////////////////////////////////////// edit user //////////////////////////////////////
 router.put("/users/:id", protect, authorize(["Admin"]), async (req, res) => {
   const { fname, lname, email, role } = req.body;
   try {
@@ -64,6 +67,7 @@ router.put("/users/:id", protect, authorize(["Admin"]), async (req, res) => {
   }
 });
 
+////////////////////////////////////// del user //////////////////////////////////////
 router.delete("/users/:id", protect, authorize(["Admin"]), async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
@@ -73,6 +77,7 @@ router.delete("/users/:id", protect, authorize(["Admin"]), async (req, res) => {
   }
 });
 
+////////////////////////////////////// find fname user //////////////////////////////////////
 router.get("/users/:fname", protect, authorize(["Admin"]), async (req, res) => {
     try {
         const fname = await User.find({
@@ -88,5 +93,7 @@ router.get("/users/:fname", protect, authorize(["Admin"]), async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+////////////////////////////////////////////////////////////////////////////
 
 module.exports = router;
