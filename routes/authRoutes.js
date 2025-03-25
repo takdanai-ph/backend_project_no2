@@ -17,19 +17,76 @@ const router = express.Router();
 // });
 
 ////////////////////////////////////// login //////////////////////////////////////
+// router.post('/login', async (req, res) => {
+//   const { username, password } = req.body;
+//   try {
+//     const user = await User.findOne({ username });
+//     if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+
+//     // สร้าง JWT Token
+//     const token = jwt.sign({ id: user._id, username: user.username, role: user.role, team_id: user.team_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+//     res.json({ token, user: { id: user._id, username: user.username, role: user.role, team_id: user.team_id } });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// });
+
+////////////////////////////////////// login 2 //////////////////////////////////////
+
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
+  
+  // ตรวจสอบว่ามีการส่ง username และ password มาหรือไม่
+  if (!username || !password) {
+    return res.status(400).json({
+      status: "error",
+      message: "Missing username and/or password"
+    });
+  }
+  
   try {
     const user = await User.findOne({ username });
-    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
-
+    if (!user) {
+      return res.status(401).json({
+        status: "error",
+        message: "Login failed"
+      });
+    }
+    
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
-
-    // สร้าง JWT Token
-    const token = jwt.sign({ id: user._id, username: user.username, role: user.role, team_id: user.team_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    res.json({ token, user: { id: user._id, username: user.username, role: user.role, team_id: user.team_id } });
+    if (!isMatch) {
+      return res.status(401).json({
+        status: "error",
+        message: "Login failed"
+      });
+    }
+    
+    // สร้าง JWT Token โดยตั้งเวลาให้หมดอายุใน 60 วินาที
+    const token = jwt.sign(
+      { id: user._id, username: user.username, role: user.role, team_id: user.team_id },
+      process.env.JWT_SECRET,
+      { expiresIn: '60s' }
+    );
+    
+    // ส่ง Response 200 พร้อมข้อมูลที่ต้องการ
+    res.status(200).json({
+      status: "ok",
+      message: "Logged in",
+      accessToken: token,
+      expiresIn: 60000, // 60,000 มิลลิวินาที = 60 วินาที
+      user: {
+        id: user._id,
+        fname: user.fname,
+        lname: user.lname,
+        username: user.username,
+        email: user.email,
+        picture: user.picture
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
